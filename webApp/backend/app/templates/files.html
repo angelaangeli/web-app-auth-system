@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Файлы</title>
+    <style>
+        .file-item {
+            margin-bottom: 10px;
+        }
+        video, img {
+            max-width: 500px;
+            display: block;
+            margin-top: 10px;
+        }
+        #progressContainer {
+            width: 100%;
+            background-color: #ddd;
+            margin-top: 20px;
+        }
+        #progressBar {
+            width: 0%;
+            height: 25px;
+            background-color: #4CAF50;
+            text-align: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Загрузка файлов</h1>
+
+<input id="fileInput" type="file" multiple>
+<button onclick="upload()">Загрузить</button>
+
+
+
+<h2>Загруженные файлы</h2>
+<div id="fileList"></div>
+
+<div id="preview" style="margin-top:20px;"></div>
+
+<script>
+function safeId(filename) {
+    return encodeURIComponent(filename);
+}
+
+function previewFile(filename) {
+    const preview = document.getElementById("preview");
+    const lower = filename.toLowerCase();
+
+    if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")) {
+        preview.innerHTML = `<img src="/media/${filename}" style="max-width:500px;">`;
+    } else if (lower.endsWith(".mp4") || lower.endsWith(".mov")) {
+        preview.innerHTML = `<video width="500" height="300" controls>
+            <source src="/media/${filename}" type="video/mp4">
+            Ваш браузер не поддерживает просмотр видео.
+        </video>`;
+    } else {
+        preview.innerHTML = `Предпросмотр недоступен для ${filename}`;
+    }
+}
+
+async function loadFiles() {
+    const res = await fetch("/list-files");
+    const data = await res.json();
+    const list = document.getElementById("fileList");
+    list.innerHTML = "";
+
+    data.files.forEach(name => {
+        const item = document.createElement("div");
+        item.className = "file-item";
+        const id = safeId(name);
+
+        item.innerHTML = `
+            <b>${name}</b><br>
+            <button onclick="view('${id}')">Просмотреть</button>
+            <button onclick="download('${id}')">Скачать</button>
+            <button onclick="del('${id}')">Удалить</button>
+            <div id="preview-${id}"></div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function view(encodedName) {
+    const filename = decodeURIComponent(encodedName);
+    const preview = document.getElementById("preview-" + encodedName);
+    const lower = filename.toLowerCase();
+
+    if (lower.endsWith(".mp4") || lower.endsWith(".mov")) {
+        preview.innerHTML = `<video controls width="400">
+            <source src="/media/${filename}" type="video/mp4">
+            Ваш браузер не поддерживает просмотр видео.
+        </video>`;
+    } else if (lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png")) {
+        preview.innerHTML = `<img src="/media/${filename}" style="max-width:400px;">`;
+    } else {
+        preview.innerHTML = "Предпросмотр не поддерживается.";
+    }
+}
+
+function download(encodedName) {
+    const filename = decodeURIComponent(encodedName);
+    window.location.href = `/download/${filename}`;
+}
+
+async function del(encodedName) {
+    const filename = decodeURIComponent(encodedName);
+    await fetch(`/delete/${filename}`, { method: "DELETE" });
+    loadFiles();
+}
+
+function upload() {
+    const files = document.getElementById("fileInput").files;
+    const form = new FormData();
+    for (let f of files) form.append("files", f);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/upload");
+
+    xhr.upload.onprogress = e => {
+        if (e.lengthComputable) {
+            const pr = Math.round((e.loaded / e.total) * 100);
+            const bar = document.getElementById("progressBar");
+            bar.style.width = pr + "%";
+            bar.innerText = pr + "%";
+        }
+    };
+
+    xhr.onload = () => {
+        document.getElementById("fileInput").value = "";
+        loadFiles();
+        document.getElementById("progressBar").style.width = "0%";
+        document.getElementById("progressBar").innerText = "0%";
+    };
+    xhr.send(form);
+}
+
+loadFiles();
+</script>
+
+</body>
+</html>

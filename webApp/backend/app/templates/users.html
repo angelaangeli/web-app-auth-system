@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Пользователи</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 80%;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+        td[contenteditable="true"] {
+            background-color: #f0f8ff;
+        }
+        .delete-btn {
+            color: red;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h1>Пользователи</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Full Name</th>
+            <th>Company</th>
+            <th>Position</th>
+            <th>Удалить</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr data-user-id="{{ user.id }}">
+            <td contenteditable="true" data-field="username">{{ user.username }}</td>
+            <td contenteditable="true" data-field="password">{{ user.password }}</td>
+            <td contenteditable="true" data-field="fullname">{{ user.fullname }}</td>
+            <td contenteditable="true" data-field="company">{{ user.company }}</td>
+            <td contenteditable="true" data-field="position">{{ user.position }}</td>
+            <td><span class="delete-btn">Удалить</span></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+
+    async function saveRow(tr) {
+        const userId = tr.dataset.userId;
+
+        const payload = {
+            username: tr.querySelector('[data-field="username"]').innerText.trim(),
+            password: tr.querySelector('[data-field="password"]').innerText.trim(),
+            fullname: tr.querySelector('[data-field="fullname"]').innerText.trim(),
+            company: tr.querySelector('[data-field="company"]').innerText.trim(),
+            position: tr.querySelector('[data-field="position"]').innerText.trim(),
+        };
+
+        const response = await fetch(`/users/${userId}`, {
+            method: "PUT",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            alert("Ошибка при сохранении в базе");
+        }
+    }
+
+
+    document.querySelectorAll('td[contenteditable="true"]').forEach(cell => {
+        cell.addEventListener("blur", (e) => {
+            const tr = e.target.closest("tr");
+            saveRow(tr);
+        });
+    });
+
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const tr = e.target.closest("tr");
+            const userId = tr.dataset.userId;
+
+            if (!confirm("Удалить этого пользователя?")) return;
+
+            const response = await fetch(`/users/${userId}`, { method: "DELETE" });
+            if (response.ok) {
+                tr.remove();
+            } else {
+                alert("Ошибка при удалении");
+            }
+        });
+    });
+
+});
+</script>
+
+</body>
+</html>

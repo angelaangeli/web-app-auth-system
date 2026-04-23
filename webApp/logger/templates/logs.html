@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Логи</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 90%;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Системные логи</h1>
+
+<h1>Логи</h1>
+<table>
+  <tr><th>ID</th><th>Action</th><th>Details</th><th>Created</th></tr>
+  {% for log in logs %}
+  <tr>
+    <td>{{ log.id }}</td>
+    <td>{{ log.action }}</td>
+    <td>{{ log.details }}</td>
+    <td>{{ log.created_at }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+
+</body>
+</html>

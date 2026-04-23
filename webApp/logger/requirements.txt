@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+psycopg2-binary
+tenacity
+jinja2
+requests
+python-multipart

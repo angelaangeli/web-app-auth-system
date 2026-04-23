@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    restart: always
+    environment:
+      LOGGER_URL: "http://logger:9000/log"
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploaded_files:/app/uploaded_files
+    env_file:
+      - .env
+
+  logger:
+    build:
+      context: ./logger
+      dockerfile: Dockerfile
+    container_name: logger
+    restart: always
+    environment:
+      LOGGER_POSTGRES_HOST: ${LOGGER_POSTGRES_HOST}
+      LOGGER_POSTGRES_PORT: ${LOGGER_POSTGRES_PORT}
+      LOGGER_POSTGRES_DB: ${LOGGER_POSTGRES_DB}
+      LOGGER_POSTGRES_USER: ${LOGGER_POSTGRES_USER}
+      LOGGER_POSTGRES_PASSWORD: ${LOGGER_POSTGRES_PASSWORD}
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Авторизация</title>
+    <style>
+        body {
+            text-align: center;
+            margin-top: 100px;
+            font-family: Arial, sans-serif;
+        }
+        form {
+            display: inline-block;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        input {
+            display: block;
+            margin: 10px auto;
+            padding: 5px;
+            width: 200px;
+        }
+        button {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Вход</h1>
+    <form action="/login" method="post">
+        <input type="text" name="username" placeholder="Логин" required>
+        <input type="password" name="password" placeholder="Пароль" required>
+        <button type="submit">Войти</button>
+        {% if error %}
+        <p style="color:red;">{{ error }}</p>
+        {% endif %}
+    </form>
+
+</body>
+</html>
